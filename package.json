@@ -1,0 +1,22 @@
+{
+  "name": "TurtleSocketTest",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently --kill-others \"npm run openSyncServer\" \"npm run openTestServer\"",
+    "openSyncServer": "node sync/syncServer.js",
+    "openTestServer": "nodemon --exec 'ts-node' src/server/index.ts"
+  },
+  "dependencies": {
+    "@types/node": "^14.14.9",
+    "@types/ws": "^7.4.0",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "ts-node": "^9.0.0",
+    "typescript": "^4.1.2",
+    "ws": "^7.4.0"
+  },
+  "devDependencies": {
+    "concurrently": "^5.3.0",
+    "nodemon": "^2.0.6"
+  }
+}
