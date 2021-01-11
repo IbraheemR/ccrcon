@@ -19,9 +19,7 @@ export default class CCRconServer {
         turtleHandler.handleMessage(data as string)
       );
 
-      turtleHandler.on("ready", () =>
-        this.emitter.emit("clientConnect", turtleHandler)
-      );
+      this.emitter.emit("clientConnect", turtleHandler)
     });
   }
 
@@ -42,13 +40,11 @@ export class CCRconHandler {
 
   private emitter: Emitter<CCRconHandlerEvents>;
 
-  private ready: boolean;
   private waitingOn: Command | null;
 
   private outboundCommandQueue: Command[];
 
   constructor(private socket: WebSocket) {
-    this.ready = false;
     this.waitingOn = null;
     this.emitter = createNanoEvents();
 
@@ -111,52 +107,30 @@ export class CCRconHandler {
   }
 
   private sendCommandMessage(command: Command) {
-    let message = `${command.id}!${command.data}`;
-    this.socket.send(message);
+    this.socket.send(command.data);
   }
 
   handleMessage(message: string) {
-    let { id, opcode, data } =
-      message.match(/^(?<id>[A-Za-z0-9]*)(?<opcode>[\@\#])(?<data>.*)$/i)
-        ?.groups ?? {};
-
-    if (!(id && opcode && data))
-      throw `Could not pass returned data: ${message}`;
-
-    switch (opcode) {
-      case "@":
-        if (!this.ready) {
-          this.ready = true;
-          this.name = data;
-          this.emitter.emit("ready");
-        }
-        break;
-      case "#":
-        this.handleInstructionReturn(id, JSON.parse(data), message);
-        break;
-    }
+    this.handleInstructionReturn(
+      JSON.parse(message), message
+    );
   }
 
   private handleInstructionReturn(
-    id: string,
     data: any[],
     originalMessage: string
   ) {
-    if (this.waitingOn.id == id) {
-      let [ok, ...returns] = data;
+    let [ok, ...returns] = data;
 
-      if (!ok) {
-        this.waitingOn.rej(
-          `Receieved error from turtle ${this.name}: ${originalMessage}`
-        );
-      } else {
-        this.waitingOn.res(returns);
-      }
-
-      this.waitingOn = null;
+    if (!ok) {
+      this.waitingOn.rej(
+        `Receieved error from turtle ${this.name}: ${originalMessage}`
+      );
     } else {
-      throw `Recieved unexpected response from turtle ${this.name}: ${originalMessage}`;
+      this.waitingOn.res(returns);
     }
+
+    this.waitingOn = null;
     this.tryShiftQueue();
   }
 }

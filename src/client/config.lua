@@ -1,4 +1,1 @@
-return {
-    SERVER = "ws://localhost:8001",
-    NAME =  "heemcomp1"
-}
+return {SERVER = "%CCRCON_URL%"}  -- Substitute with ccrcon server. Is auto changed based on env var if served from sync server
