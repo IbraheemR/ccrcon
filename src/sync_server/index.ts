@@ -43,8 +43,10 @@ app.use(interceptor((req, res) => ({
 
 app.use(express.static(process.env.SYNC_FOLDER))
 
-
-
 app.listen(process.env.SYNC_PORT, () =>
     console.log(`sync server listening on port ${process.env.SYNC_PORT}!`)
 );
+
+process.on("SIGINT", () => {
+    process.exit()
+})

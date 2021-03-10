@@ -13,7 +13,7 @@ export default class TurtleProxy {
    */
 
   // TODO: add checking for if CCRconHandler is connected to a computer
-  constructor(public rconHandler: CCRconHandler) {}
+  constructor(public rconHandler: CCRconHandler) { }
 
   // TODO: can remove casts to any?
   forward(): Promise<ActionSuccess | ActionFailure> {
@@ -177,6 +177,10 @@ export default class TurtleProxy {
 
   gpsLocate(): Promise<[number, number, number] | []> {
     return this.rconHandler.$(`gps.locate()`) as any;
+  }
+
+  $(command: string): Promise<any[]> {
+    return this.rconHandler.dispatchCommand(command)
   }
 }
 

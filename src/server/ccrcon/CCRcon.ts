@@ -1,4 +1,5 @@
 import { createNanoEvents, Emitter } from "nanoevents";
+import { create } from "ts-node";
 import WebSocket from "ws";
 
 interface CCRconServerEvents {
@@ -14,12 +15,8 @@ export default class CCRconServer {
     this.emitter = createNanoEvents<CCRconServerEvents>();
 
     this.server.on("connection", (socket: WebSocket) => {
-      let turtleHandler = new CCRconHandler(socket);
-      socket.on("message", (data) =>
-        turtleHandler.handleMessage(data as string)
-      );
-
-      this.emitter.emit("clientConnect", turtleHandler)
+      let ccrcon = new CCRconHandler(socket);
+      this.emitter.emit("clientConnect", ccrcon);
     });
   }
 
@@ -28,6 +25,10 @@ export default class CCRconServer {
     callback: CCRconServerEvents[E]
   ) {
     return this.emitter.on(event, callback);
+  }
+
+  close() {
+    this.server.close();
   }
 }
 
@@ -38,18 +39,14 @@ interface CCRconHandlerEvents {
 export class CCRconHandler {
   name: string;
 
-  private emitter: Emitter<CCRconHandlerEvents>;
+  private emitter: Emitter<CCRconHandlerEvents> = createNanoEvents();
 
-  private waitingOn: Command | null;
+  private waitingOn: Command | null = null;
 
-  private outboundCommandQueue: Command[];
+  private outboundCommandQueue: Command[] = [];
 
   constructor(private socket: WebSocket) {
-    this.waitingOn = null;
-    this.emitter = createNanoEvents();
-
-    this.outboundCommandQueue = [];
-
+    this.socket.on("message", (data) => this.handleMessage(data as string));
     this.socket.on("close", () => this.emitter.emit("close"));
   }
 
@@ -94,9 +91,7 @@ export class CCRconHandler {
   /**
    * @alias dispatchCommand
    */
-  $(command: string): Promise<any[]> {
-    return this.dispatchCommand(command);
-  }
+  $ = this.dispatchCommand;
 
   private tryShiftQueue() {
     if (!this.waitingOn && this.outboundCommandQueue.length > 0) {

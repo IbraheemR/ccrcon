@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "",
   "scripts": {
+    "syncServer": "ts-node src/sync_server/index.ts",
     "devSyncServer": "nodemon --exec 'ts-node' src/sync_server/index.ts",
     "devCcrconServer": "nodemon --exec 'ts-node' src/server/index.ts"
   },
@@ -10,6 +11,7 @@
   "dependencies": {
     "@types/express": "^4.17.9",
     "@types/node": "^14.14.20",
+    "@types/ws": "^7.4.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "express-interceptor": "^1.2.0",
